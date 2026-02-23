@@ -3,6 +3,7 @@
 #include "Adafruit_LEDBackpack.h"  //for screen
 #include <string>
 
+
 #define outArrSize 100
 #define DISPLAY_ADDRESS 0x70  //I2C address of screen
 #define SCREEN_BRIGHTNESS 15
@@ -14,12 +15,11 @@ char outData[outArrSize];
 //vars for screen
 Adafruit_AlphaNum4 disp = Adafruit_AlphaNum4();
 
-int testNumber = 0;
+float testNumber = 0;
 
 void setup() {
   //serial setup
   Serial.begin(115200);
-  Serial.println("ready for Data:\n");
   //setup screen
   // Wire.setSCL(17);
   // Wire.setSDA(16);
@@ -27,16 +27,25 @@ void setup() {
   Wire.setSDA(4);
   disp.begin(DISPLAY_ADDRESS);
   disp.setBrightness(SCREEN_BRIGHTNESS);
+
+  randomSeed(rp2040.hwrand32());  // Seed with true hardware randomness
 }
 
 void loop() {
 
-  testNumber=testNumber+1;
   delay(500);
 
+   int baseNumber = random(100);
+  float baseFloat = static_cast<float>(baseNumber) / 100.0f;
+  testNumber=testNumber+baseFloat;
+  displayNumber(testNumber);
 
+
+  
+}
+
+void displayNumber(float speed){
     disp.clear();
-    float speed = testNumber;
     int temp = speed * 10;
     // int temp = rand();
     if (temp < 10) { temp = 0; }  // show 0 when stopped and not noise.
@@ -53,9 +62,4 @@ void loop() {
     disp.writeDigitAscii(2, 48 + digit2, true);
     disp.writeDigitAscii(3, 48 + digit3);
     disp.writeDisplay();
-  
-}
-
-void displayNumber(float speed){
-  
 }
