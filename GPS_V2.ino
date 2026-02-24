@@ -9,10 +9,6 @@
 #define DISPLAY_ADDRESS 0x70  //I2C address of screen
 #define SCREEN_BRIGHTNESS 15
 
-//vars for serial communication
-String incomingData;
-char outData[outArrSize];
-
 //vars for screen
 Adafruit_AlphaNum4 disp = Adafruit_AlphaNum4();
 
@@ -53,6 +49,8 @@ void setup() { //DISPLAY
   Wire.setSDA(4);
   disp.begin(DISPLAY_ADDRESS);
   disp.setBrightness(SCREEN_BRIGHTNESS);
+
+  displayNumber(999);
 
 }
 
