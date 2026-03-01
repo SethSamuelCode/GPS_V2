@@ -52,6 +52,8 @@ void setup() { //DISPLAY
 
   displayNumber(999);
 
+  rp2040.wdt_begin(2000); //start watchdog timer. 2 second timer. 
+
 }
 
 void loop() { //DISPLAY
@@ -61,6 +63,8 @@ void loop() { //DISPLAY
     displayNumber(speedDisplay);
     prevSpeed = speedDisplay;
   }
+
+  rp2040.wdt_reset();
 }
 
 void setup1() {
