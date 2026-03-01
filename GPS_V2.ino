@@ -11,11 +11,13 @@
 
 //vars for screen
 Adafruit_AlphaNum4 disp = Adafruit_AlphaNum4();
+unsigned long timeOfLastFix = 0UL; 
 
 //GPS
 SFE_UBLOX_GNSS myGNSS;
 
 std::atomic<int> currentSpeedDisplay(0);
+std::atomic<int> gpsFixType(0);
 int prevSpeed =0;
 
 void displayNumber(int temp){
@@ -38,6 +40,25 @@ void displayNumber(int temp){
     disp.writeDisplay();
 }
 
+void displayWaiting(){
+
+    unsigned long currentTime = millis();
+    unsigned long timeSinceLastFIx = timeOfLastFix - currentTime;
+    int flashStage = timeSinceLastFIx % 3000;
+    for (int x = 0; x < 4; x++) {
+      if (flashStage < 1000) {
+        disp.writeDigitAscii(x, 3U);  //bottom
+      } else if (flashStage < 2000 && flashStage > 1000) {
+        disp.writeDigitRaw(x, 192u);  //middle
+      } else if (flashStage < 3000 && flashStage > 2000) {
+        disp.writeDigitRaw(x, 1);  //top
+      }
+      disp.writeDisplay();
+
+    }
+
+}
+
 
 void setup() { //DISPLAY
   //serial setup
@@ -50,7 +71,7 @@ void setup() { //DISPLAY
   disp.begin(DISPLAY_ADDRESS);
   disp.setBrightness(SCREEN_BRIGHTNESS);
 
-  displayNumber(999);
+  // displayNumber(999);
 
   rp2040.wdt_begin(2000); //start watchdog timer. 2 second timer. 
 
@@ -58,10 +79,15 @@ void setup() { //DISPLAY
 
 void loop() { //DISPLAY
 
-  int speedDisplay = currentSpeedDisplay.load(std::memory_order_relaxed);
-  if (speedDisplay != prevSpeed){
-    displayNumber(speedDisplay);
-    prevSpeed = speedDisplay;
+  if (gpsFixType.load()>0){
+    timeOfLastFix = millis(); //reload wait time for wait screen
+    int speedDisplay = currentSpeedDisplay.load(std::memory_order_relaxed);
+    if (speedDisplay != prevSpeed){
+      displayNumber(speedDisplay);
+      prevSpeed = speedDisplay;
+    }
+  } else {
+    displayWaiting();
   }
 
   rp2040.wdt_reset();
@@ -103,11 +129,14 @@ void setup1() {
 void loop1() {
   if (myGNSS.getPVT()) {
     long speed_mms = myGNSS.getGroundSpeed();
+    int tempGpsFixType = myGNSS.getFixType();
     
     // Update the shared variable for Core 0 to read
     float currentSpeedKmhTemp = speed_mms * 0.036; // prepare number for display in kmh speed * 0.0036 * 10
     int speedInt = currentSpeedKmhTemp;
+
     currentSpeedDisplay.store(speedInt, std::memory_order_relaxed);
+    gpsFixType.store(speedInt,std::memory_order_relaxed);
   }
 }
 
