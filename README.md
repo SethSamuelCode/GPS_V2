@@ -67,4 +67,6 @@ To convert to km/h, we multiply by `0.0036`. However, to display one decimal pla
 Therefore, the code uses `speed_mms * 0.036` to combine the unit conversion and the decimal shift into one efficient calculation.
 
 ##  License
-This project is open-source and free to use. Feel free to fork, modify, and integrate it into your own automotive/marine projects!
+## 📄 License
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. 
+See the `LICENSE` file for details. You are free to use, modify, and distribute this software, provided that any derivative works are also open-source under the same license.
